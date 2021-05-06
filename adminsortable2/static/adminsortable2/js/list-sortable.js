@@ -77,6 +77,7 @@ django.jQuery(function($) {
 				},
 				error: function (response) {
 					console.error('The server responded: ' + response.responseText);
+					alert('failed, please refresh the page and try again error message:' + response.responseText)
 				}
 			});
 		}
