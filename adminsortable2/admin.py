@@ -2,6 +2,7 @@ import os
 import json
 from itertools import chain
 from types import MethodType
+import logging
 
 from django import forms
 from django.contrib import admin, messages
@@ -19,6 +20,7 @@ from django.db.models.aggregates import Max
 from django.db.models.expressions import F
 from django.db.models.functions import Coalesce
 from django.db.models.signals import post_save, pre_save
+from django.db.utils import OperationalError
 from django.forms import widgets
 from django.forms.models import BaseInlineFormSet
 from django.http import (
@@ -30,6 +32,8 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import path, reverse
 
 __all__ = ['SortableAdminMixin', 'SortableInlineAdminMixin']
+
+logger = logging.getLogger(__name__)
 
 
 def _get_default_ordering(model, model_admin):
@@ -89,6 +93,8 @@ class LockedAtomicTransaction(Atomic):
                 cursor.execute(
                     'LOCK TABLE {db_table_name}'.format(db_table_name=self.model._meta.db_table)
                 )
+            except OperationalError as e:
+                logger.error(e)
             finally:
                 if cursor and not cursor.closed:
                     cursor.close()
